@@ -35,7 +35,7 @@ def Supertrend(df, atr_period, multiplier):
     # HL2 is the average of high and low prices
     hl2 = (high + low) / 2
     # upperband and lowerband calculation
-    # notice that final bands are set to be equal to the respective bands
+    #final bands are set to be equal to the respective bands
     final_upperband = upperband = hl2 + (multiplier * atr)
     final_lowerband = lowerband = hl2 - (multiplier * atr)
     
