@@ -4,10 +4,10 @@ from datetime import datetime
 from matplotlib.ticker import MaxNLocator
 from matplotlib.dates import date2num, DateFormatter
 
-consumerkey = 'sZjdgrnQO7dYE4qj4nCjJ4vb4Uoa'
-consumer_secret = 'MgzWAO3zRRafZgwCE5dDTl1t2roa'
-Pan = 'DZGPG7699M'
-Password = '@Lgsim4904'
+consumerkey = ''
+consumer_secret = ''
+Pan = ''
+Password = ''
 
 ltp_values = []
 plot_values = []
