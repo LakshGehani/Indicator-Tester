@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import requests
 from math import floor
-from termcolor import colored as cl
 
 plt.style.use('fivethirtyeight')
 plt.rcParams['figure.figsize'] = (20,10)

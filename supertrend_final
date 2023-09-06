@@ -95,7 +95,7 @@ def backtest_supertrend(df, investment):
     # initial condition
     in_position = False
     equity = investment
-    commission = 5
+    commission = 0
     share = 0
     entry = []
     exit = []
