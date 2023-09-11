@@ -8,6 +8,7 @@ from dash import html
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import numpy as np
+import math
 
 db_config = {
     'host': 'localhost',
@@ -25,17 +26,19 @@ app.title = 'Interactive Charts'
 
 app.layout = html.Div([
     html.Div([
-        html.Label('Multiplier', style={'display': 'inline-block', 'margin-right': '10px'}),
-        dcc.Input(id='multiplier-input', type='number', value=default_multiplier, style={'display': 'inline-block'}),
+        html.Label('Multiplier', className="multiplier"),
+        dcc.Input(id='multiplier-input', type='number',
+                  value=default_multiplier, style={'display': 'inline-block'}),
     ]),
-    
+
     html.Div([
-        html.Label('ATR Period', style={'display': 'inline-block', 'margin-right': '10px'}),
-        dcc.Input(id='atr-period-input', type='number', value=default_atr_period, style={'display': 'inline-block'}),
+        html.Label('ATR Period', className="atr-period"),
+        dcc.Input(id='atr-period-input', type='number',
+                  value=default_atr_period, style={'display': 'inline-block'}),
     ]),
 
     dcc.Graph(id='candlestick-chart'),
-    
+
     dcc.Interval(
         id='interval-component',
         interval=60 * 1000,
@@ -43,17 +46,18 @@ app.layout = html.Div([
     )
 ])
 
+
 def fetch_data():
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
     cursor.execute("SELECT datetime, open, high, low, close FROM Data")
     data = cursor.fetchall()
     df = pd.DataFrame(
-            data, columns=['datetime', 'open', 'high', 'low', 'close'])
+        data, columns=['datetime', 'open', 'high', 'low', 'close'])
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.set_index('datetime', inplace=True)
     return df
-    
+
 
 def Supertrend(df, atr_period, multiplier):
 
@@ -112,6 +116,7 @@ def Supertrend(df, atr_period, multiplier):
         'Final Upperband': final_upperband
     }, index=df.index)
 
+
 @app.callback(
     Output('candlestick-chart', 'figure'),
     Input('interval-component', 'n_intervals'),
@@ -122,6 +127,7 @@ def update_candlestick_chart(n_intervals, atr_period, multiplier):
 
     df = fetch_data()
     supertrend_data = Supertrend(df, atr_period, multiplier)
+    combined_df = pd.concat([df, supertrend_data], axis=1)
 
     candlestick_chart = go.Figure(data=[go.Candlestick(
         x=df.index,
@@ -129,40 +135,62 @@ def update_candlestick_chart(n_intervals, atr_period, multiplier):
         high=df['high'],
         low=df['low'],
         close=df['close'],
-        name='Candlesticks'
+        name='Candlesticks',
+        showlegend=False,
     )])
-    
+
     candlestick_chart.add_trace(go.Scatter(
         x=df.index,
         y=supertrend_data['Final Upperband'],
         mode='lines',
         name='Final Upperband',
-        line=dict(color='green')
+        line=dict(color='red')
     ))
     candlestick_chart.add_trace(go.Scatter(
         x=df.index,
         y=supertrend_data['Final Lowerband'],
         mode='lines',
         name='Final Lowerband',
-        line=dict(color='red')
+        line=dict(color='green')
     ))
-    
+
     candlestick_chart.update_layout(
-        title='Candlestick Chart with Supertrend',
-        xaxis_title='Date',
+        title='BankNifty Data',
+        xaxis_title='Time',
         yaxis_title='Price',
         xaxis_rangeslider_visible=False,
         width=1250,
-        height=600
+        height=600,
+        yaxis=dict(
+            tickformat='f'
+        ),
+        font=dict(
+            family="verdana",
+            size=12,
+            color="white"
+        ),
+        plot_bgcolor="#f2f2f2",
+        paper_bgcolor="black",
+        margin=dict(
+            l=50,
+            r=50,
+            b=100,
+            t=100,
+            pad=4
+        ),
+        hovermode="closest",
+        legend=dict(
+            font=dict(size=10),
+            bgcolor="black",
+            bordercolor="gray",
+            borderwidth=1
+        ),
+        title_x=0.5,
+        title_xanchor='center'
     )
-    
+
     return candlestick_chart
- 
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
-
-
-

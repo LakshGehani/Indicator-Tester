@@ -1,0 +1,16 @@
+/* todo:add styling to app */
+
+body{
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: lightblue;
+    background: black;
+    text-align: center;
+}
+
+.multiplier{
+    margin-left: 10px;
+}
+
+#candlestick-chart--title{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
