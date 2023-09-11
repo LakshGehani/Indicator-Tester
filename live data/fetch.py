@@ -1,3 +1,4 @@
+from aiosqlite import Connection
 import mysql.connector
 from neo_api_client import NeoAPI
 from datetime import datetime
@@ -28,10 +29,6 @@ def save_to_database(time, open, high, low, close):
             f"Candlestick data saved to the database: Time={time}, Open={open}, High={high}, Low={low}, Close={close}")
     except Exception as e:
         print("Error saving candlestick data to the database:", e)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
 
 
 def candle_creation(ltp_values):
