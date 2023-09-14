@@ -17,8 +17,9 @@ db_config = {
     'database': 'tutorial'
 }
 
-default_atr_period = 3
+default_atr_period = 14
 default_multiplier = 2
+starting_investment_amount = 100000000
 
 external_stylesheets = ['styles.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -37,7 +38,14 @@ app.layout = html.Div([
                   value=default_atr_period, style={'display': 'inline-block'}),
     ]),
 
-    dcc.Graph(id='candlestick-chart'),
+    html.Div([
+        html.Label('Starting Investment Amount', className="investment-amount"),
+        dcc.Input(id='investment-input', type='number',
+                  value=10000000, style={'display': 'inline-block'})
+    ]),
+
+    html.Div(dcc.Graph(id='candlestick-chart')),
+    html.Div(id='backtest-results'),
 
     dcc.Interval(
         id='interval-component',
@@ -45,7 +53,6 @@ app.layout = html.Div([
         n_intervals=0
     )
 ])
-
 
 def fetch_data():
     connection = mysql.connector.connect(**db_config)
@@ -57,7 +64,6 @@ def fetch_data():
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.set_index('datetime', inplace=True)
     return df
-
 
 def Supertrend(df, atr_period, multiplier):
 
@@ -116,19 +122,63 @@ def Supertrend(df, atr_period, multiplier):
         'Final Upperband': final_upperband
     }, index=df.index)
 
+def backtest_supertrend(df, investment):
+    is_uptrend = df['Supertrend']
+    close = df['close']
+    
+    # initial condition
+    in_position = False
+    equity = investment
+    commission = 5
+    share = 0
+    entry = []
+    exit = []
+    buy_transactions = [] 
+    sell_transactions = [] 
+    
+    for i in range(2, len(df)):
+        # if not in position & price is on uptrend -> buy
+        if not in_position and is_uptrend[i]:
+            share = math.floor(equity / close[i] / 100) * 100
+            equity -= share * close[i]
+            entry.append((i, close[i]))
+            buy_transactions.append((share, close[i], df.index[i]))  # Append to buy_transactions
+            in_position = True
+            print(f'Buy {share} shares at {round(close[i],2)} on {df.index[i].strftime("%H:%M:%S")}')
+        # if in position & price is not on uptrend -> sell
+        elif in_position and not is_uptrend[i]:
+            equity += share * close[i] - commission
+            exit.append((i, close[i]))
+            sell_transactions.append((share, close[i], df.index[i]))  # Append to sell_transactions
+            in_position = False
+            print(f'Sell at {round(close[i],2)} at {df.index[i].strftime("%H:%M:%S")}')
+
+    # if still in position -> sell all share 
+    if in_position:
+        equity += share * close[i] - commission
+    
+    earning = equity - investment
+    roi = round(earning/investment*100,2)
+    print(f'Earning from investing {starting_investment_amount} is ${round(earning,2)} (ROI = {roi}%)')
+    
+    return entry, exit, roi, buy_transactions, sell_transactions 
+ 
 
 @app.callback(
     Output('candlestick-chart', 'figure'),
+    Output('backtest-results', 'children'),
     Input('interval-component', 'n_intervals'),
     Input('atr-period-input', 'value'),
-    Input('multiplier-input', 'value')
+    Input('multiplier-input', 'value'),
+    Input('investment-input', 'value')
 )
-def update_candlestick_chart(n_intervals, atr_period, multiplier):
-
+def update_candlestick_chart(n_intervals, atr_period, multiplier, investment):
+    global starting_investment_amount
+    starting_investment_amount = investment
     df = fetch_data()
     supertrend_data = Supertrend(df, atr_period, multiplier)
     combined_df = pd.concat([df, supertrend_data], axis=1)
-
+    entry, exit, roi, buy_transactions, sell_transactions = backtest_supertrend(combined_df, starting_investment_amount)
     candlestick_chart = go.Figure(data=[go.Candlestick(
         x=df.index,
         open=df['open'],
@@ -153,6 +203,24 @@ def update_candlestick_chart(n_intervals, atr_period, multiplier):
         name='Final Lowerband',
         line=dict(color='green')
     ))
+    buy_signal_trace = go.Scatter(
+        x=[buy[2] for buy in buy_transactions],
+        y=[buy[1] for buy in buy_transactions],
+        mode='markers',
+        marker=dict(symbol='triangle-up', size=8, color='green'),
+        name='Buy Signals'
+    )
+
+    sell_signal_trace = go.Scatter(
+        x=[sell[2] for sell in sell_transactions], 
+        y=[sell[1] for sell in sell_transactions], 
+        mode='markers',
+        marker=dict(symbol='triangle-down', size=8, color='red'),
+        name='Sell Signals'
+    )
+
+    candlestick_chart.add_trace(buy_signal_trace)
+    candlestick_chart.add_trace(sell_signal_trace)
 
     candlestick_chart.update_layout(
         title='BankNifty Data',
@@ -189,8 +257,20 @@ def update_candlestick_chart(n_intervals, atr_period, multiplier):
         title_xanchor='center'
     )
 
-    return candlestick_chart
 
+    backtest_results_str = ''
+    
+    max_len = max(len(buy_transactions), len(sell_transactions))
+    
+    for i in range(max_len):
+        if i < len(buy_transactions):
+            buy = buy_transactions[i]
+            backtest_results_str += f'Buy {buy[0]} shares at {buy[1]} on {buy[2].strftime("%H:%M:%S")}||'
+        if i < len(sell_transactions):
+            sell = sell_transactions[i]
+            backtest_results_str += f'Sell at {sell[1]} at {sell[2].strftime("%H:%M:%S")}||'
+
+    return candlestick_chart, backtest_results_str
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
