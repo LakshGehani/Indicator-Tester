@@ -105,8 +105,9 @@ Before running the main application, you need to fetch financial market data and
 3. **Access the Live Chart**:
 
    Open your web browser and go to [http://localhost:8050](http://localhost:8050). You will see the real-time candlestick chart with the Supertrend indicator.
+   ![App Screenshot](./assets/example.jpg)
 
-4. **Market Monitoring**:
+5. **Market Monitoring**:
 
    - Observe live price data and Supertrend signals.
    - Use the real-time data for market analysis and decision-making.
