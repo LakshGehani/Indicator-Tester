@@ -2,6 +2,14 @@
 
 This project consists of two parts: historical data backtesting using the Supertrend indicator and Chopiness Index with data from Yahoo Finance and live data plotting and Supertrend calculation for market entry and exit using the Kotak Neo API.
 
+## Disclaimer
+
+This financial analysis and visualization tool is provided for educational and informational purposes only. It is not intended to be used as financial advice or to make actual financial decisions. 
+
+Please be aware that trading and investing in financial markets involve significant risks, and past performance is not indicative of future results. Before making any financial decisions, consult with a qualified financial advisor, conduct your own research, and consider your individual financial situation and risk tolerance.
+
+The authors and contributors of this tool do not guarantee the accuracy or completeness of the data and analysis presented, and they are not responsible for any financial losses or gains that may result from the use of this tool. Use this tool at your own discretion and risk.
+
 ## Part 1: Historical Data Backtesting
 
 ### Overview
@@ -70,13 +78,23 @@ The second part of this project focuses on plotting live market data and calcula
 
 ### Getting Started
 
-1. **Navigate to the Project Directory**:
+
+Before running the main application, you need to fetch financial market data and store it in your MySQL database. Follow these steps to do so:
+
+1. Open your command-line interface (CLI).
+
+2. Navigate to the project directory if you're not already there:
 
    ```bash
-   cd live-data
+   cd /path/to/repository/live-data
+   
+2. **Start the websocket**:
+
+   ```bash
+   python fetch.py
    ```
 
-2. **Run the Application**:
+4. **Open your code editor and run the application**:
 
    Execute the following command to start the Live Data Analysis application:
 
@@ -114,7 +132,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgments
 
 - This project leverages the power of Python, Dash, Plotly, and financial APIs to provide valuable insights and real-time market analysis.
-
-- Special thanks to the Kotak Neo API for providing live market data.
 
 Enjoy using this Supertrend Backtesting and Live Data Analysis tool for your financial analysis and trading needs!
