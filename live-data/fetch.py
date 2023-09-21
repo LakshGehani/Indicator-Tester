@@ -6,14 +6,14 @@ from datetime import datetime
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '@Lgsimone4904',
-    'database': 'tutorial'
+    'password': '',
+    'database': ''
 }
 
-consumerkey = 'sZjdgrnQO7dYE4qj4nCjJ4vb4Uoa'
-consumer_secret = 'MgzWAO3zRRafZgwCE5dDTl1t2roa'
-Pan = 'DZGPG7699M'
-Password = '@Lgsim4904'
+consumerkey = ''
+consumer_secret = ''
+Pan = ''
+Password = ''
 
 ltp_values = []
 
